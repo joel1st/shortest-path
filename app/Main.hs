@@ -15,18 +15,34 @@ feedbackLoop state = do
 	let [cmd, arg] = handleInput input
 	case cmd of
 	    "create" -> do 
-	    	     let decodedInput = decodePerson arg 
-		     print $ retrieveVal decodedInput "age"
-	    	     feedbackLoop decodedInput
+	    	handleCreate arg state
 	    "update" -> do 
-		     putStrLn "Update logic"
-		     feedbackLoop state
+	    	handleUpdate arg state
 	    "calculate" -> do 
-	    	     putStrLn "Calc logic"
-		     feedbackLoop state
+	    	handleCalculate arg state
 	    _ -> do 
-	    	     putStrLn "Invalid Command"
-		     feedbackLoop state
+		putStrLn "Invalid Command"
+		feedbackLoop state
+
+handleCreate arg state = do
+	let decodedInput = decodePerson arg 
+	-- print $ retrieveVal "age" decodedInput
+	feedbackLoop decodedInput 
+
+handleUpdate arg state = do
+	putStrLn "Update logic"
+	feedbackLoop state
+
+handleCalculate arg state = do
+	putStrLn "Calc logic"
+	case state of
+	    Just(val) -> do 
+		print $ initCache state
+		-- print $ cache
+		feedbackLoop state
+	    _ -> do
+		putStrLn "Please provide data to use"
+		feedbackLoop state
 
 handleInput input = [cmd, arg]
 	where
