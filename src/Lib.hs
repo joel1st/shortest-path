@@ -10,7 +10,8 @@ module Lib (
 	trim,
 	initCache,
 	nextNode,
-	shortestDistance
+	shortestDistance,
+	deepMergeGraph
 	) where
 import System.Environment
 import Data.Aeson
@@ -121,12 +122,8 @@ applyDistanceToNode distanceFromNode key val = newNode
 		_ -> val
 
 
--- update cache where value is smaller than the cache 
 
+-- deep merge graph
+deepMergeGraph :: GraphNodes -> GraphNodes -> GraphNodes
+deepMergeGraph graph graphChanges = unionWithKey (\k v1 v2 -> union v2 v1) graph graphChanges
 
-
-  
-	
-
-
--- 4.Feed new cache into point 2.

@@ -27,12 +27,24 @@ feedbackLoop state = do
 
 handleCreate arg state = do
 	let decodedInput = decodeInput arg 
-	-- print $ retrieveVal "age" decodedInput
 	feedbackLoop decodedInput 
 
 handleUpdate arg state = do
 	putStrLn "Update logic"
-	feedbackLoop state
+	case state of
+	    Just(val) -> do 
+		let decodedInput = decodeInput arg 
+		case decodedInput of
+		    Just(updates) -> do 
+			let newState = deepMergeGraph val updates 
+			print newState
+			feedbackLoop (Just newState)
+		    _ -> do 
+			putStrLn "Invalid update parameters"
+			feedbackLoop state
+	    _ -> do
+		putStrLn "Please create your graph before attempting to update"
+		feedbackLoop state
 
 handleCalculate arg state = do
 	putStrLn "Calc logic"
