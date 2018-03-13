@@ -27,7 +27,12 @@ feedbackLoop state = do
 
 handleCreate arg state = do
 	let decodedInput = decodeInput arg 
-	feedbackLoop decodedInput 
+	case decodedInput of
+	    Just(input) -> do 
+		let sanitisedInput = sanitiseGraph input
+		feedbackLoop (Just sanitisedInput)
+	    _ -> do
+	    	putStrLn "Invalid graph format"
 
 handleUpdate arg state = do
 	putStrLn "Update logic"
@@ -38,7 +43,8 @@ handleUpdate arg state = do
 		    Just(updates) -> do 
 			let newState = deepMergeGraph val updates 
 			print newState
-			feedbackLoop (Just newState)
+			let sanitisedInput = sanitiseGraph newState 
+			feedbackLoop (Just sanitisedInput)
 		    _ -> do 
 			putStrLn "Invalid update parameters"
 			feedbackLoop state
@@ -48,19 +54,23 @@ handleUpdate arg state = do
 
 handleCalculate arg state = do
 	putStrLn "Calc logic"
+	let [start, end] = splitOn "->" $ pack arg
+	let startPoint = trim $ unpack start
+	let endPoint = trim $ unpack end 
+
 	case state of
 	    Just(val) -> do 
-		let cache = initCache "a" val
-		let startValid = Hm.member "a" cache
+		let cache = initCache startPoint val
+		let startValid = Hm.member startPoint cache
 		putStrLn "Valid Start"
 		print startValid 
-		let endValid = Hm.member "b" cache
+		let endValid = Hm.member endPoint cache
 		putStrLn "Valid End"
 		print endValid 
 		print cache
 		print cache
 		print $ nextNode cache
-		print $ shortestDistance "a" "b" cache val
+		print $ shortestDistance startPoint endPoint cache val
 		-- print $ cache
 		feedbackLoop state
 	    _ -> do

@@ -11,7 +11,8 @@ module Lib (
 	initCache,
 	nextNode,
 	shortestDistance,
-	deepMergeGraph
+	deepMergeGraph,
+	sanitiseGraph
 	) where
 import System.Environment
 import Data.Aeson
@@ -121,7 +122,16 @@ applyDistanceToNode distanceFromNode key val = newNode
 			else val
 		_ -> val
 
-
+-- sanitise graph
+sanitiseGraph :: GraphNodes -> GraphNodes
+sanitiseGraph graph = foldlWithKey' (\a k v ->
+	 deepMergeGraph	(deepMergeGraph a (Hm.singleton k v)) (buildInverseGraph k v)
+	) (Hm.empty :: GraphNodes) graph
+ 
+buildInverseGraph :: String -> GraphNode -> GraphNodes
+buildInverseGraph key node = foldlWithKey' (\a k v -> 
+	Hm.insert k (Hm.singleton key v) a
+   ) (Hm.empty :: GraphNodes) node
 
 -- deep merge graph
 deepMergeGraph :: GraphNodes -> GraphNodes -> GraphNodes
