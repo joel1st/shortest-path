@@ -32,8 +32,8 @@ helpMessage = "Description of how to use the project"
 decodeInput json = decode (C.pack json) :: Maybe GraphNodes
 
 unwrap val = case val of
-	Just (x) -> x
-	_ -> error "Invalid unwrap" 
+  Just (x) -> x
+  _ -> error "Invalid unwrap" 
 
 retrieveVal key val =  unwrap $ Hm.lookup key (unwrap val)
 
@@ -79,19 +79,19 @@ nextNode :: DijkstraCache -> String
 nextNode cache = minKey
   where 
   validNodes = Hm.filter (\v -> 
-  	finished v == False && 
-	nodePath v /= Nothing &&
-	distance v /= Nothing
-	) cache
+      finished v == False && 
+      nodePath v /= Nothing &&
+      distance v /= Nothing
+    ) cache
   nodesAsList = toList validNodes
   minKey = 
     if L.length nodesAsList == 0 
       then error "The start and end node are not connected"
-	else snd $ L.minimum $ L.map (\(key, val) -> 
-	    case distance val of
-	      Just(dist) -> (dist, key)
-	      _ -> error "Bad filter logic" -- this should never happen because of filter above
-	    ) $ nodesAsList
+    else snd $ L.minimum $ L.map (\(key, val) -> 
+      case distance val of
+        Just(dist) -> (dist, key)
+        _ -> error "Bad filter logic" -- this should never happen because of filter above
+      ) $ nodesAsList
 
 -- 3. use graph to determine distances from starting point (calc = cache point + graph distance) - update cache and set to true after completing.
 type DistanceFromNode = [(String, Float)]
@@ -103,8 +103,8 @@ calcDistancesFromNode key graph cache = newProcessedCache
   distancesFromNode = determineDistance graphNode dijkstraNode
   distancesAppliedToCache = Hm.mapWithKey (applyDistanceToNode distancesFromNode) cache
   newProcessedCache = updateCache (
-	   DijkstraNode (distance dijkstraNode) (nodePath dijkstraNode) True
-	) key distancesAppliedToCache 
+      DijkstraNode (distance dijkstraNode) (nodePath dijkstraNode) True
+    ) key distancesAppliedToCache 
 
 determineDistance :: GraphNode -> DijkstraNode -> DistanceFromNode
 determineDistance graphNode dijkstraNode = L.map (\(key, val) -> 
@@ -113,25 +113,25 @@ determineDistance graphNode dijkstraNode = L.map (\(key, val) ->
   
 applyDistanceToNode :: DistanceFromNode -> String -> DijkstraNode -> DijkstraNode
 applyDistanceToNode distanceFromNode key val = newNode
-	where
-	  cacheElem = L.find (\updatedNode -> fst updatedNode == key) distanceFromNode
-	  newNode = case cacheElem of
-		Just(elem) -> 
-		  if distance val == Nothing || snd elem < (unwrap $ distance val)
-	            then DijkstraNode (Just $ snd elem) (Just key) False
-			else val
-		_ -> val
+  where
+  cacheElem = L.find (\updatedNode -> fst updatedNode == key) distanceFromNode
+  newNode = case cacheElem of
+    Just(elem) -> 
+      if distance val == Nothing || snd elem < (unwrap $ distance val)
+        then DijkstraNode (Just $ snd elem) (Just key) False
+      else val
+    _ -> val
 
 -- sanitise graph
 sanitiseGraph :: GraphNodes -> GraphNodes
 sanitiseGraph graph = foldlWithKey' (\a k v ->
-	 deepMergeGraph	(deepMergeGraph a (Hm.singleton k v)) (buildInverseGraph k v)
-	) (Hm.empty :: GraphNodes) graph
+    deepMergeGraph	(deepMergeGraph a (Hm.singleton k v)) (buildInverseGraph k v)
+  ) (Hm.empty :: GraphNodes) graph
  
 buildInverseGraph :: String -> GraphNode -> GraphNodes
 buildInverseGraph key node = foldlWithKey' (\a k v -> 
-	Hm.insert k (Hm.singleton key v) a
-   ) (Hm.empty :: GraphNodes) node
+    Hm.insert k (Hm.singleton key v) a
+  ) (Hm.empty :: GraphNodes) node
 
 -- deep merge graph
 deepMergeGraph :: GraphNodes -> GraphNodes -> GraphNodes
