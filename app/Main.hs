@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
+import qualified Data.HashMap.Strict as Hm
 import Lib
 import Data.Text
 
@@ -25,7 +26,7 @@ feedbackLoop state = do
 		feedbackLoop state
 
 handleCreate arg state = do
-	let decodedInput = decodePerson arg 
+	let decodedInput = decodeInput arg 
 	-- print $ retrieveVal "age" decodedInput
 	feedbackLoop decodedInput 
 
@@ -37,7 +38,16 @@ handleCalculate arg state = do
 	putStrLn "Calc logic"
 	case state of
 	    Just(val) -> do 
-		print $ initCache state
+		let cache = initCache "a" val
+		let startValid = Hm.member "a" cache
+		putStrLn "Valid Start"
+		print startValid 
+		let endValid = Hm.member "b" cache
+		putStrLn "Valid End"
+		print endValid 
+		print cache
+		print cache
+		print $ nextNode cache
 		-- print $ cache
 		feedbackLoop state
 	    _ -> do
@@ -47,7 +57,7 @@ handleCalculate arg state = do
 handleInput input = [cmd, arg]
 	where
 	 trimInput = trim input
-	 cmd = getCommand $ convText trimInput 
+	 cmd = getCommand $ pack trimInput 
 	 arg = trim $ getArg cmd trimInput 
 
 
