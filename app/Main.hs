@@ -48,6 +48,7 @@ handleCalculate arg state = do
 		print cache
 		print cache
 		print $ nextNode cache
+		print $ shortestDistance "a" "b" cache val
 		-- print $ cache
 		feedbackLoop state
 	    _ -> do
