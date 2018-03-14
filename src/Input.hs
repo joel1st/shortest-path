@@ -42,11 +42,9 @@ handleUpdate arg state = do
       let decodedInput = decodeInput arg 
       case decodedInput of
         Just(updates) -> do 
-          let newState = deepMergeGraph val updates 
-          print newState
-          let sanitisedInput = sanitiseGraph newState 
+          let newState = deepMergeGraph val $ sanitiseGraph updates 
           putStrLn "Graph Updated: Type `state` to view"
-          feedbackLoop (Just sanitisedInput)
+          feedbackLoop (Just newState)
         _ -> do 
           putStrLn "Invalid update parameters"
           feedbackLoop state

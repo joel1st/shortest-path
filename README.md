@@ -1,5 +1,6 @@
 # Shortest-Path
 An interactive CLI for calculating the shortest path
+This project uses stack:  https://github.com/commercialhaskell/stack
 
 To run: `stack build && stack exec shortest-path-exe`
 
@@ -15,4 +16,6 @@ Find shortest point:
 
 To see current graph:
 `state`
+
+
 
