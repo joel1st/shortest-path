@@ -2,8 +2,8 @@
 module CreateUpdate ( 
   decodeInput,
   deepMergeGraph,
-	sanitiseGraph
-	) where
+  sanitiseGraph
+) where
 import qualified Data.ByteString.Lazy.Char8 as C
 import qualified Data.Aeson as Aeson
 import qualified Data.HashMap.Strict as Hm
@@ -15,7 +15,7 @@ decodeInput json = Aeson.decode (C.pack json) :: Maybe GraphNodes
 -- Eg. {"a": {"c": 5}} is converted to {"a": {"c": 5}, "c": {"a": 5}} for internal use.
 sanitiseGraph :: GraphNodes -> GraphNodes
 sanitiseGraph graph = Hm.foldlWithKey' (\a k v ->
-    deepMergeGraph	(deepMergeGraph a (Hm.singleton k v)) (buildInverseGraph k v)
+    deepMergeGraph (deepMergeGraph a (Hm.singleton k v)) (buildInverseGraph k v)
   ) (Hm.empty :: GraphNodes) graph
  
 buildInverseGraph :: String -> GraphNode -> GraphNodes
