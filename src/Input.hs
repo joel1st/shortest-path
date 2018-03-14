@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Input ( 
-	feedbackLoop,
-	) where
+  feedbackLoop,
+) where
 import qualified Data.HashMap.Strict as Hm
 import qualified Data.Text as T
 import qualified Data.List as L
@@ -31,12 +31,12 @@ handleCreate arg state = do
   case decodedInput of
     Just(input) -> do 
       let sanitisedInput = sanitiseGraph input
+      putStrLn "Graph Created: Type `state` to view"
       feedbackLoop (Just sanitisedInput)
     _ -> do
       putStrLn "Invalid graph format"
 
 handleUpdate arg state = do
-  putStrLn "Update logic"
   case state of
     Just(val) -> do 
       let decodedInput = decodeInput arg 
@@ -45,6 +45,7 @@ handleUpdate arg state = do
           let newState = deepMergeGraph val updates 
           print newState
           let sanitisedInput = sanitiseGraph newState 
+          putStrLn "Graph Updated: Type `state` to view"
           feedbackLoop (Just sanitisedInput)
         _ -> do 
           putStrLn "Invalid update parameters"
@@ -54,7 +55,6 @@ handleUpdate arg state = do
       feedbackLoop state
 
 handleCalculate arg state = do
-  putStrLn "Calc logic"
   let [start, end] = T.splitOn "->" $ T.pack arg
   let startPoint = trim $ T.unpack start
   let endPoint = trim $ T.unpack end 
@@ -64,6 +64,7 @@ handleCalculate arg state = do
       let cache = initCache startPoint val
       let startValid = Hm.member startPoint cache
       let endValid = Hm.member endPoint cache
+      putStrLn "Shortest Distance :"
       print $ shortestDistance startPoint endPoint cache val
       feedbackLoop state
     _ -> do
@@ -78,11 +79,11 @@ handleInput input = [cmd, arg]
 
 getCommand :: T.Text -> String
 getCommand input 
-	| T.isPrefixOf "create" input = "create"
-	| T.isPrefixOf "update" input = "update"
-	| T.isPrefixOf "calculate" input = "calculate"
-	| T.isPrefixOf "state" input = "state"
-	| otherwise            = ""
+  | T.isPrefixOf "create" input = "create"
+  | T.isPrefixOf "update" input = "update"
+  | T.isPrefixOf "calculate" input = "calculate"
+  | T.isPrefixOf "state" input = "state"
+  | otherwise            = ""
 
 getArg cmd input = input L.\\ cmd
 
