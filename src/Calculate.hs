@@ -1,71 +1,22 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
-module Lib ( 
-	handleLog,
-	helpMessage, 
-	decodeInput, 
+module Calculate ( 
 	retrieveVal, 
-	getCommand, 
-	getArg,
-	trim,
 	initCache,
-	nextNode,
-	shortestDistance,
-	deepMergeGraph,
-	sanitiseGraph
+	shortestDistance
 	) where
-import System.Environment
-import Data.Aeson
 import qualified Data.List as L
 import qualified Data.Traversable as T
-import GHC.Generics (Generic)
-import qualified Data.ByteString.Lazy.Char8 as C
-import Data.Text
 import qualified Data.HashMap.Strict as Hm
-import Data.HashMap.Strict
-handleLog :: String -> IO ()
-handleLog test = putStrLn test
+import Types
 
-helpMessage :: String
-helpMessage = "Description of how to use the project"
-
-decodeInput json = decode (C.pack json) :: Maybe GraphNodes
-
-unwrap val = case val of
-  Just (x) -> x
-  _ -> error "Invalid unwrap" 
-
-retrieveVal key val =  unwrap $ Hm.lookup key (unwrap val)
-
-getCommand :: Text -> String
-getCommand input 
-	| isPrefixOf "create" input = "create"
-	| isPrefixOf "update" input = "update"
-	| isPrefixOf "calculate" input = "calculate"
-	| otherwise            = ""
-
-getArg cmd input = input L.\\ cmd
-
-trim :: String -> String
-trim val = unpack $ strip $ pack val
-
-updateCache val key graph = Hm.adjust (\v -> val) key graph
-
-
--- 1. init cache with empty vals and set starting point to have a val of 0
+-- 1. cache is used to store computation results of dijkstra's algorithim
+-- init cache with empty vals and set starting point to have a val of 0
 initCache :: String -> GraphNodes -> DijkstraCache
 initCache startKey graph = updateCache (DijkstraNode (Just 0) (Just startKey) False) startKey emptyCache
  where	
  emptyCache = Hm.map (\v -> DijkstraNode Nothing Nothing False) graph
 
-
-data DijkstraNode = DijkstraNode { distance :: Maybe Float, nodePath :: Maybe String, finished :: Bool } deriving Show
-type DijkstraCache = HashMap String DijkstraNode
-
-type GraphNode = HashMap String Float
-type GraphNodes = HashMap String GraphNode
-
--- Dijkstra Algorithm
+-- 2. Dijkstra Algorithm
 shortestDistance :: String -> String -> DijkstraCache -> GraphNodes -> Float
 shortestDistance currentPoint endPoint cache graph
   | currentPoint == endPoint = unwrap $ distance $ retrieveVal currentPoint (Just cache)
@@ -74,7 +25,7 @@ shortestDistance currentPoint endPoint cache graph
     currentPointCache = calcDistancesFromNode currentPoint graph cache
     nextPoint = nextNode currentPointCache 
 
--- 2. find lowest val in cache that doesn't have finished set to true - if the lowest val is the endPoint, return the val.
+-- 2. find lowest val in cache that doesn't have finished set to true
 nextNode :: DijkstraCache -> String 
 nextNode cache = minKey
   where 
@@ -83,7 +34,7 @@ nextNode cache = minKey
       nodePath v /= Nothing &&
       distance v /= Nothing
     ) cache
-  nodesAsList = toList validNodes
+  nodesAsList = Hm.toList validNodes
   minKey = 
     if L.length nodesAsList == 0 
       then error "The start and end node are not connected"
@@ -93,8 +44,8 @@ nextNode cache = minKey
         _ -> error "Bad filter logic" -- this should never happen because of filter above
       ) $ nodesAsList
 
--- 3. use graph to determine distances from starting point (calc = cache point + graph distance) - update cache and set to true after completing.
-type DistanceFromNode = [(String, Float)]
+-- 3. use graph to determine distances from starting point (calc = cache point + graph distance) 
+-- update cache and set processed to true for the point after completing.
 calcDistancesFromNode :: String -> GraphNodes -> DijkstraCache -> DijkstraCache 
 calcDistancesFromNode key graph cache = newProcessedCache 
   where 
@@ -109,7 +60,7 @@ calcDistancesFromNode key graph cache = newProcessedCache
 determineDistance :: GraphNode -> DijkstraNode -> DistanceFromNode
 determineDistance graphNode dijkstraNode = L.map (\(key, val) -> 
       (key, val + (unwrap $ distance dijkstraNode))
-    ) $ toList graphNode
+    ) $ Hm.toList graphNode
   
 applyDistanceToNode :: DistanceFromNode -> String -> DijkstraNode -> DijkstraNode
 applyDistanceToNode distanceFromNode key val = newNode
@@ -122,18 +73,11 @@ applyDistanceToNode distanceFromNode key val = newNode
       else val
     _ -> val
 
--- sanitise graph
-sanitiseGraph :: GraphNodes -> GraphNodes
-sanitiseGraph graph = foldlWithKey' (\a k v ->
-    deepMergeGraph	(deepMergeGraph a (Hm.singleton k v)) (buildInverseGraph k v)
-  ) (Hm.empty :: GraphNodes) graph
- 
-buildInverseGraph :: String -> GraphNode -> GraphNodes
-buildInverseGraph key node = foldlWithKey' (\a k v -> 
-    Hm.insert k (Hm.singleton key v) a
-  ) (Hm.empty :: GraphNodes) node
+-- Util
+unwrap val = case val of
+  Just (x) -> x
+  _ -> error "Invalid unwrap" 
 
--- deep merge graph
-deepMergeGraph :: GraphNodes -> GraphNodes -> GraphNodes
-deepMergeGraph graph graphChanges = unionWithKey (\k v1 v2 -> union v2 v1) graph graphChanges
+retrieveVal key val =  unwrap $ Hm.lookup key (unwrap val)
 
+updateCache val key graph = Hm.adjust (\v -> val) key graph
