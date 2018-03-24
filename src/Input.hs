@@ -62,8 +62,14 @@ handleCalculate arg state = do
       let cache = initCache startPoint val
       let startValid = Hm.member startPoint cache
       let endValid = Hm.member endPoint cache
-      putStrLn "Shortest Distance :"
-      print $ shortestDistance startPoint endPoint cache val
+      let calcRes = shortestDistance (Right startPoint) endPoint cache val
+      case calcRes of 
+        Left(errorMessage) -> do
+          putStrLn "Failed to calculate distance: "
+          print errorMessage 
+        Right(distance) -> do
+          putStrLn ("Distance from " ++ arg)
+          print distance 
       feedbackLoop state
     _ -> do
       putStrLn "Please provide data to use"

@@ -13,4 +13,4 @@ type DijkstraCache = HashMap String DijkstraNode
 type GraphNode = HashMap String Float
 type GraphNodes = HashMap String GraphNode
 
-type DistanceFromNode = [(String, Float)]
+type DistanceFromNode = [(String, Maybe(Float))]
