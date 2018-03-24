@@ -85,6 +85,6 @@ applyDistanceToNode distanceFromNode key val = newNode
     _ -> val
 
 fromMaybe def (Just a) = a
-fromMaybe def Nothing = Nothing 
+fromMaybe def Nothing = def 
 
 updateCache val key graph = Hm.adjust (\v -> val) key graph
