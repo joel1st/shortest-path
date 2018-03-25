@@ -18,13 +18,14 @@ initCache startKey graph = updateCache (DijkstraNode (Just 0) (Just startKey) Fa
 
 -- 2. Dijkstra Algorithm
 shortestDistance :: Either String String -> String -> DijkstraCache -> GraphNodes -> Either String Float
-shortestDistance currentPoint endPoint cache graph
-  | E.isLeft currentPoint = Left $ E.fromLeft "" currentPoint
-  | E.fromRight "" currentPoint == endPoint = formatResult (E.fromRight "" currentPoint) endPoint cache graph
-  | otherwise = shortestDistance nextPoint endPoint currentPointCache graph 
+shortestDistance currentPoint endPoint cache graph = case currentPoint of 
+  Left(err) -> Left(err)
+  Right(point) -> if (point == endPoint) 
+    then formatResult point endPoint cache graph
+    else shortestDistance nextPoint endPoint currentPointCache graph 
     where 
-    currentPointCache = calcDistancesFromNode (E.fromRight "" currentPoint) graph cache
-    nextPoint = nextNode currentPointCache 
+    currentPointCache = calcDistancesFromNode point graph cache
+    nextPoint = nextNode currentPointCache
 
 formatResult :: String -> String -> DijkstraCache -> GraphNodes -> Either String Float
 formatResult currentPoint endPoint cache graph = formatted
